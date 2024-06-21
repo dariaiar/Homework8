@@ -6,35 +6,9 @@ import (
 )
 
 type TotalScore struct {
-	ID            int
 	ScorePerRound []int
 	TotalScore    int
-	Answer        int
 	AnswerHistory []int
-}
-
-var Player1 = TotalScore{
-	ID:            82,
-	ScorePerRound: []int{},
-	TotalScore:    0,
-	Answer:        0,
-	AnswerHistory: []int{},
-}
-
-var Player2 = TotalScore{
-	ID:            107,
-	ScorePerRound: []int{},
-	TotalScore:    0,
-	Answer:        0,
-	AnswerHistory: []int{},
-}
-
-var Player3 = TotalScore{
-	ID:            315,
-	ScorePerRound: []int{},
-	TotalScore:    0,
-	Answer:        0,
-	AnswerHistory: []int{},
 }
 
 func (t *TotalScore) Scores(round generator.Rounds, answer int) TotalScore {
@@ -48,14 +22,14 @@ func (t *TotalScore) Scores(round generator.Rounds, answer int) TotalScore {
 			//fmt.Println(val)
 			sum += val
 		}
-		fmt.Printf("Correct answer. You gained 5 points. Your total score is: %v", sum)
+		fmt.Printf("\nCorrect answer. You gained 5 points. Your total score is: %v", sum)
 	} else {
 		t.ScorePerRound = append(t.ScorePerRound, 0)
 		for _, val := range t.ScorePerRound {
 			//fmt.Println(val)
 			sum += val
 		}
-		fmt.Printf("Wrong answer. You gained 0 points. Your total score is: %v", sum)
+		fmt.Printf("\nWrong answer. You gained 0 points. Your total score is: %v", sum)
 
 	}
 	t.TotalScore = sum

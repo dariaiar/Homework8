@@ -32,28 +32,29 @@ type Channels struct {
 	Answer            chan int
 }
 
-func NewRound(c Channels, rou int) {
+func NewChannels() Channels {
+	return Channels{
+		QuestionForPlayer: make(chan Rounds),
+		QuestionForScores: make(chan Rounds),
+		Answer:            make(chan int),
+	}
+}
 
-	whichround := rou
-	switch whichround {
+func NewRound(c Channels, roundNum int) {
+	var round Rounds
+
+	switch roundNum {
 	case 1:
-		c.QuestionForPlayer <- round1
-		c.QuestionForScores <- round1
-		time.Sleep(10 * time.Second)
-		close(c.QuestionForPlayer)
-		close(c.QuestionForScores)
+		round = round1
 	case 2:
-		c.QuestionForPlayer <- round2
-		c.QuestionForScores <- round2
-		time.Sleep(10 * time.Second)
-		close(c.QuestionForPlayer)
-		close(c.QuestionForScores)
+		round = round2
 	case 3:
-		c.QuestionForPlayer <- round3
-		c.QuestionForScores <- round3
-		time.Sleep(10 * time.Second)
-		close(c.QuestionForPlayer)
-		close(c.QuestionForScores)
+		round = round3
 	}
 
+	c.QuestionForPlayer <- round
+	c.QuestionForScores <- round
+	time.Sleep(10 * time.Second)
+	close(c.QuestionForPlayer)
+	close(c.QuestionForScores)
 }
