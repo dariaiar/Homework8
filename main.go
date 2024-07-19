@@ -3,9 +3,10 @@ package main
 import (
 	"Homework8/counter"
 	"Homework8/generator"
-	"Homework8/players"
+	"Homework8/users"
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -18,26 +19,53 @@ func main() {
 	for i := 0; i < numPlayers; i++ {
 		playersScores[i] = &counter.TotalScore{}
 	}
+
+	players := make([]*users.Player, numPlayers)
+	for i := 0; i < numPlayers; i++ {
+		players[i] = &users.Player{
+			ID:      i,
+			Channel: make(chan generator.Rounds),
+		}
+	}
+
+	var wg sync.WaitGroup
+	answerChan := make(chan users.PlayerAnswer)
+
+	for i := range players {
+		wg.Add(1)
+		go players[i].Play(ctx, &wg, answerChan)
+	}
+
+	go func() {
+		wg.Wait()
+		close(answerChan)
+	}()
+
+	rounds := []generator.Rounds{generator.Round1, generator.Round2, generator.Round3}
 	for round := 1; round <= 3; round++ {
 		fmt.Printf("\n----------ROUND %v----------\n", round)
-		for i := 0; i < numPlayers; i++ {
-			chanRound := generator.Channels{
-				QuestionForPlayer: make(chan generator.Rounds),
-				QuestionForScores: make(chan generator.Rounds),
-				Answer:            make(chan int),
-			}
-			go generator.NewRound(chanRound, round)
-			go players.GamePlayer(chanRound, ctx, i)
-			roundData := <-chanRound.QuestionForScores
-			answer := <-chanRound.Answer
-			playersScores[i].Scores(roundData, answer)
-			fmt.Printf("\nscorePerRound: %v;\ntotalScore: %v; \nanswerHistory: %v;\n", playersScores[i].ScorePerRound, playersScores[i].TotalScore, playersScores[i].AnswerHistory)
-			time.Sleep(1 * time.Second)
+		for i := range players {
+			players[i].Channel <- rounds[round-1]
 		}
 
-		//close(qfp)
-		//close(qfs)
+		for i := 0; i < numPlayers; i++ {
+			playerAnswer := <-answerChan
+			playersScores[playerAnswer.PlayerID].Scores(rounds[round-1], playerAnswer.Answer)
+			fmt.Printf("\nscorePerRound: %v;\ntotalScore: %v; \nanswerHistory: %v;\n",
+				playersScores[playerAnswer.PlayerID].ScorePerRound,
+				playersScores[playerAnswer.PlayerID].TotalScore,
+				playersScores[playerAnswer.PlayerID].AnswerHistory)
+		}
+		time.Sleep(2 * time.Second)
 	}
+
+	for i := range players {
+		close(players[i].Channel)
+	}
+
 	//---- WINNER ----
-	fmt.Printf("\nTotal scores of players:\nPlayer 0: %v\nPlayer 1: %v\nPlayer 2: %v", playersScores[0].TotalScore, playersScores[1].TotalScore, playersScores[2].TotalScore)
+	fmt.Printf("\nTotal scores of players:\n")
+	for i := 0; i < numPlayers; i++ {
+		fmt.Printf("Player %v: %v\n", i, playersScores[i].TotalScore)
+	}
 }

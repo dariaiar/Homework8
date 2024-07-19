@@ -2,7 +2,6 @@ package counter
 
 import (
 	"Homework8/generator"
-	"fmt"
 )
 
 type TotalScore struct {
@@ -11,27 +10,15 @@ type TotalScore struct {
 	AnswerHistory []int
 }
 
-func (t *TotalScore) Scores(round generator.Rounds, answer int) TotalScore {
-
+func (t *TotalScore) Scores(round generator.Rounds, answer int) {
 	t.AnswerHistory = append(t.AnswerHistory, answer)
-
-	var sum int
 	if answer == round.RightAnswer {
 		t.ScorePerRound = append(t.ScorePerRound, 5)
-		for _, val := range t.ScorePerRound {
-			//fmt.Println(val)
-			sum += val
-		}
-		fmt.Printf("\nCorrect answer. You gained 5 points. Your total score is: %v", sum)
 	} else {
 		t.ScorePerRound = append(t.ScorePerRound, 0)
-		for _, val := range t.ScorePerRound {
-			//fmt.Println(val)
-			sum += val
-		}
-		fmt.Printf("\nWrong answer. You gained 0 points. Your total score is: %v", sum)
-
 	}
-	t.TotalScore = sum
-	return *t
+	t.TotalScore = 0
+	for _, val := range t.ScorePerRound {
+		t.TotalScore += val
+	}
 }
