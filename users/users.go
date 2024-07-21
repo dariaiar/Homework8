@@ -34,7 +34,7 @@ func (p *Player) Play(ctx context.Context, wg *sync.WaitGroup, answerChan chan<-
 				fmt.Printf("\n %v  ", answer)
 			}
 			fmt.Printf("\nPlayer %v. Choose your answer:", p.ID)
-			playerAnswer := rand.Intn(4) + 1 // Corrected random answer to be in range 1-4
+			playerAnswer := rand.Intn(4) + 1
 			fmt.Printf("\nAnswer: %v", playerAnswer)
 			answerChan <- PlayerAnswer{PlayerID: p.ID, Answer: playerAnswer}
 		}

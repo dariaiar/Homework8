@@ -19,7 +19,6 @@ func main() {
 	for i := 0; i < numPlayers; i++ {
 		playersScores[i] = &counter.TotalScore{}
 	}
-
 	players := make([]*users.Player, numPlayers)
 	for i := 0; i < numPlayers; i++ {
 		players[i] = &users.Player{
@@ -27,27 +26,22 @@ func main() {
 			Channel: make(chan generator.Rounds),
 		}
 	}
-
 	var wg sync.WaitGroup
 	answerChan := make(chan users.PlayerAnswer)
-
 	for i := range players {
 		wg.Add(1)
 		go players[i].Play(ctx, &wg, answerChan)
 	}
-
 	go func() {
 		wg.Wait()
 		close(answerChan)
 	}()
-
 	rounds := []generator.Rounds{generator.Round1, generator.Round2, generator.Round3}
 	for round := 1; round <= 3; round++ {
 		fmt.Printf("\n----------ROUND %v----------\n", round)
 		for i := range players {
 			players[i].Channel <- rounds[round-1]
 		}
-
 		for i := 0; i < numPlayers; i++ {
 			playerAnswer := <-answerChan
 			playersScores[playerAnswer.PlayerID].Scores(rounds[round-1], playerAnswer.Answer)
@@ -58,11 +52,9 @@ func main() {
 		}
 		time.Sleep(2 * time.Second)
 	}
-
 	for i := range players {
 		close(players[i].Channel)
 	}
-
 	//---- WINNER ----
 	fmt.Printf("\nTotal scores of players:\n")
 	for i := 0; i < numPlayers; i++ {
